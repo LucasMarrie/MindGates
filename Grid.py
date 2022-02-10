@@ -42,7 +42,8 @@ class Grid():
         x, y = coordinate
         return self.grid[x][y]
 
-    def evaluateCell(self, coordinate: tuple[int, int]):
+    def evaluateCell(self, coordinate: tuple[int, int], outputIndex : int = 0, outputDirection : direction = direction.right):
+
         if not self.inBound(coordinate) or self.getCell(coordinate).empty:
             return False
         cell = self.getCell(coordinate)
@@ -50,26 +51,33 @@ class Grid():
         logicGate = cell.logicGate
         inputs = []
 
-        if len(logicGate.inputs) == 0:
+        #When a logic gate has no inputs, it's a switch, thus we evaluate based off the value given to the cell
+        if len(logicGate.inOut.inputs) == 0:
             return cell.value
 
-        for input in logicGate.inputs:
-            rotation = cell.rotation.rotate(input.value)
-            newX = round(x + math.cos(math.pi/2 * rotation.value))
-            newY = round(y + math.sin(math.pi/2 * rotation.value))
-            newCoord = (newX, newY) 
+        #getting the desired input based off the output index, only applies to cells that have an output count greater than 1
+        input = logicGate.inOut.getInputs(outputDirection)[outputIndex]
+        rotation = cell.rotation.rotate(input.value)
+        newX = round(x + math.cos(math.pi/2 * rotation.value))
+        newY = round(y - math.sin(math.pi/2 * rotation.value))
+        newCoord = (newX, newY) 
 
-            if not self.inBound(newCoord):
-                inputs.append(False)
+        if self.inBound(newCoord) and not self.getCell(newCoord).empty:
+            outputCell = self.getCell(newCoord)
+            outputRotation = rotation.rotate(2 - outputCell.rotation.value)
+            if outputCell.logicGate.inOut.matchingOut(outputRotation, logicGate.inOut.inCount):
+                # fetches multiple inputs if needed
+                for i in range(logicGate.inOut.inCount):
+                    inputs.append(self.evaluateCell(newCoord, i, outputRotation))
             else:
-                newCell = self.getCell(newCoord)
-                if not newCell.empty and rotation.rotate(2 - newCell.rotation.value) in newCell.logicGate.outputs:
-                    inputs.append(self.evaluateCell(newCoord))
-                else:
+                for i in range(logicGate.inOut.inCount):
                     inputs.append(False)
+        else:
+            for i in range(logicGate.inOut.inCount):
+                inputs.append(False)
 
         return cell.logicGate.evaluate(*inputs)
-        
+
 
     def inBound(self, coordinate: tuple[int, int]) -> bool:
         x, y = coordinate
@@ -125,4 +133,16 @@ class Grid():
 
 if __name__ == "__main__":
     grid = Grid(10, 10)
+
+    grid.setCell((0,0), logicGates["Switch"])
+    grid.setCell((0,1), logicGates["Line"], direction.down)
+    grid.setCell((0,2), logicGates["Merger"])
+    grid.setCell((1,2), logicGates["AND"])
+    grid.setCell((0,3), logicGates["Switch"])
+
+    grid.getCell((0,0)).toggleSwitch(True)
+    grid.getCell((0,3)).toggleSwitch(True)
+    
+
     grid.printOut()
+

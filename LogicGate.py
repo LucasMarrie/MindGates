@@ -1,4 +1,5 @@
 from enum import Enum
+from sysconfig import get_path_names
 from typing import Callable
 
 class direction(Enum):
@@ -28,58 +29,76 @@ class gateType(Enum):
     start = 2
     end = 3
 
+
 class InOut():
 
-    def __init__(self, inputs, outputs) -> None:
+    def __init__(self, inputs : list[direction], inCount : int, outputs : list[direction], outCount : int, bidirectional : bool = False) -> None:
         self.inputs = inputs
+        #In and Out count are the amount of inputs/outputs received from the same direction
+        self.inCount = inCount
         self.outputs = outputs
+        self.outCount = outCount
 
-    def inputCount(self) -> int:
-        return len(self.inputs)
-        
-    def outputCount(self) -> int:
-        return len(self.outputs)
+        self.bidirectional = bidirectional
+        if bidirectional:
+            #omni can only be used if outputs and inputs are the same
+            assert(inCount == outCount and len(inputs) == 1 and len(outputs) == 1)
+
+    def matchingOut(self, requiredOutput, inputCount):
+        if self.outCount != inputCount:
+            return False
+        if self.bidirectional:
+            return requiredOutput in self.inputs or requiredOutput in self.outputs
+        else:
+            return requiredOutput in self.outputs
+
+    def getInputs(self, output):
+        if self.bidirectional and output in self.inputs:
+            return self.outputs
+        return self.inputs
+
 
 class LogicGate():
 
     #to be assumed that the default logic gate rotation is right
-    def __init__(self, name: str, inputs: set[direction, direction], outputs: set[direction, direction], operation : Callable[..., bool], image: str = "") -> None:
+    def __init__(self, name: str, type : gateType, inOut : InOut, operation : Callable[..., bool], image: str = "") -> None:
         self.name = name
+        self.type = gateType
         self.image = image
-        self.outputs = outputs
-        self.inputs = inputs
+        self.inOut = inOut
         self.operation = operation
         #makes sure inputs and outputs do not overlap
-        for input in inputs:
-            assert(input not in outputs)
+        
 
     def evaluate(self, *args):
         return self.operation(*args)
 
 
-logicGates = {
+
+logicGates_list = [
     #Logic Gates
-    "AND" : LogicGate("AND", {direction.up, direction.down}, {direction.right}, lambda x, y: x and y), #AND gate
-    "NAND" : LogicGate("NAND", {direction.up, direction.down}, {direction.right}, lambda x, y: not (x and y) ), #NAND gate
-    "OR" : LogicGate("OR", {direction.up, direction.down}, {direction.right}, lambda x, y: x or y), #OR gate
-    "NOR" : LogicGate("NOR", {direction.up, direction.down}, {direction.right}, lambda x, y: not (x or y) ), #NOR gate
-    "XOR" : LogicGate("XOR", {direction.up, direction.down}, {direction.right}, lambda x, y: (x or y) and not (x and y)), #XOR gate
-    "XNOR" : LogicGate("XNOR", {direction.up, direction.down}, {direction.right}, lambda x, y: not ((x or y) and not (x and y)) ), #XOR gate
-    "NOT" : LogicGate("NOT", {direction.left}, {direction.right}, lambda x: not x), #NOT gate
+    LogicGate("AND", gateType.logic, InOut([direction.left], 2, [direction.right], 1), lambda x, y: x and y), #AND gate
+    LogicGate("NAND", gateType.logic, InOut([direction.left], 2, [direction.right], 1), lambda x, y: not (x and y) ), #NAND gate
+    LogicGate("OR", gateType.logic, InOut([direction.left], 2, [direction.right], 1), lambda x, y: x or y), #OR gate
+    LogicGate("NOR", gateType.logic, InOut([direction.left], 2, [direction.right], 1), lambda x, y: not (x or y) ), #NOR gate
+    LogicGate("XOR", gateType.logic, InOut([direction.left], 2, [direction.right], 1), lambda x, y: (x or y) and not (x and y)), #XOR gate
+    LogicGate("XNOR", gateType.logic, InOut([direction.left], 2, [direction.right], 1), lambda x, y: not ((x or y) and not (x and y)) ), #XOR gate
+    LogicGate("NOT", gateType.logic, InOut([direction.left], 1, [direction.right], 1), lambda x: not x), #NOT gate
 
     #Connecters
-    "Line" : LogicGate("Line", {direction.left}, {direction.right}, lambda x: x), #Linear Connector
-    "Bend" : LogicGate("Bend", {direction.down}, {direction.right}, lambda x: x), #Bend Connector
+    LogicGate("Line", gateType.connector, InOut([direction.left], 1, [direction.right], 1, bidirectional=True), lambda x: x), #Linear Connector
+    LogicGate("Bend", gateType.connector, InOut([direction.left], 1, [direction.right], 1, bidirectional=True), lambda x: x), #Bend Connector
+
+    LogicGate("Splitter", gateType.connector, InOut([direction.left], 1, [direction.up, direction.down], 1,), lambda x: x), #Splits an output into 2 direction
+    LogicGate("Merger", gateType.connector, InOut([direction.up, direction.down], 1, [direction.right], 2), lambda x: x), #Combines inputs from 2 directions into the same direction
 
     #Start and End
-    "Switch" : LogicGate("Switch", {}, {direction.right, direction.up, direction.left, direction.down}, lambda: True), #Start Node that's on
-    #LogicGate("Switch", {}, {direction.right, direction.up, direction.left, direction.down}, lambda : False), #Start Node that's off
+    LogicGate("Switch", gateType.start, InOut([], 0, [direction.right, direction.up, direction.left, direction.down], 1), lambda: True), #Start Node that's on
 
-    "End" : LogicGate("End", {direction.left}, {}, lambda x: x), #End Node
-}
+    LogicGate("End", gateType.end, InOut([direction.left], 1, [], 0), lambda x: x), #End Node
+]
 
-
-    
+logicGates = {gate.name : gate for gate in logicGates_list}
 
 
 
