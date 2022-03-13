@@ -6,6 +6,9 @@ import os
 
 from LogicGate import LogicGate, direction, logicGates
 
+dirname = os.path.dirname(__file__)
+SAVE_LOCATION = os.path.join(dirname, '../../data')
+
 class Cell():
 
     def __init__(self) -> None:
@@ -97,7 +100,7 @@ class Grid():
             print(line)
 
 
-    saveFile = "data/gridData.json"
+    saveFile = SAVE_LOCATION + "/gridData.json"
 
     def save(self, saveName):
 
