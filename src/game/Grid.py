@@ -147,7 +147,10 @@ class Grid():
             if saveName not in data:
                 return None
 
-            cells
+            saveData = data[saveName]
+            grid = Grid(saveData["sizeX"], saveData["sizeY"])
+            for cell in saveData["cells"]:
+                grid.setCell((cell["x"], cell["y"]), logicGates[cell["logicGate"]], direction(cell["rotation"]))
 
         except Exception as ex:
             print("Error occured while loading save from file:", ex)
