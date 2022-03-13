@@ -1,0 +1,36 @@
+{
+    "Amogus Grid": {
+        "cells": [
+            {
+                "x": 0,
+                "y": 0,
+                "logicGate": "Switch",
+                "rotation": 0
+            },
+            {
+                "x": 0,
+                "y": 1,
+                "logicGate": "Line",
+                "rotation": 3
+            },
+            {
+                "x": 0,
+                "y": 2,
+                "logicGate": "Merger",
+                "rotation": 0
+            },
+            {
+                "x": 0,
+                "y": 3,
+                "logicGate": "Switch",
+                "rotation": 0
+            },
+            {
+                "x": 1,
+                "y": 2,
+                "logicGate": "AND",
+                "rotation": 0
+            }
+        ]
+    }
+}

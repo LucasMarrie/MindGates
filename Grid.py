@@ -1,6 +1,6 @@
 
-import pickle
-import shelve
+import json
+from logging import exception
 import math
 import os
 
@@ -100,35 +100,70 @@ class Grid():
     saveFile = "data/gridData.json"
 
     def save(self, saveName):
-        try:
-            with shelve.open(self.saveFile) as data:
-                data[saveName] = self
 
+        classData = {}
+        classData["cells"] = []
+
+        classData["sizeX"] = self.sizeX
+        classData["sizeY"] = self.sizeY
+        
+
+        for x in range(self.sizeX):
+            for y in range(self.sizeY):
+                cell = self.grid[x][y]
+                if not cell.empty:
+                    cellData = {}
+                    cellData["x"] = x
+                    cellData["y"] = y
+                    cellData["logicGate"] = cell.logicGate.name
+                    cellData["rotation"] = cell.rotation.value
+                    classData["cells"].append(cellData)
+
+        try:
+            if os.path.exists(self.saveFile):
+                with open(self.saveFile, "r") as file:
+                    data = json.load(file)
+            else:
+                data = {}
+            
+            data[saveName] = classData
+
+            with open(self.saveFile, "w") as file:
+                json.dump(data, file)
         except Exception as ex:
-            print("Error During Grid data save:", ex)
+            print("Error occured while saving to file:", ex)
+        
+
 
     @classmethod
     def loadSave(cls, saveName):
         try:
-            with shelve.open(cls.saveFile) as data:
-                if saveName in data:
-                    return data[saveName]
-                else:
-                    return None
+            with open(cls.saveFile, "r") as file:
+                data = json.load(file)
+            
+            if saveName not in data:
+                return None
+
+            cells
 
         except Exception as ex:
-            print("Error During Grid data load:", ex)
+            print("Error occured while loading save from file:", ex)
+        finally:
+            return None
 
  
     @classmethod
     def deleteSave(cls, saveName):
         try:
-            with shelve.open(cls.saveFile) as data:
-                if saveName in data:
-                    data.pop(saveName)
+            with open(cls.saveFile, "r") as file:
+                data = json.load(file)
+            if saveName in data:
+                data.pop(saveName)
+                with open(cls.saveFile, "w") as file:
+                    json.dump(data, file)
 
         except Exception as ex:
-            print("Error During Grid data deletion:", ex)
+            print("Error occured while deleting a save from file:", ex)
 
 
 if __name__ == "__main__":
