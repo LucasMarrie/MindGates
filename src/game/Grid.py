@@ -36,6 +36,10 @@ class Grid():
         self.sizeY = sizeY
         self.grid = [[Cell() for _ in range(sizeY)] for _ in range(sizeX)]
 
+    def __iter__(self) -> Cell:
+        for x in range(self.sizeX):
+            for y in range(self.sizeY):
+                yield x, y
 
     def setCell(self, coordinate: tuple[int, int], logicGate: LogicGate, rotation: direction = direction(0)) -> None:
         x, y = coordinate
@@ -139,7 +143,7 @@ class Grid():
 
 
     @classmethod
-    def loadSave(cls, saveName):
+    def loadSave(cls, saveName) -> 'Grid':
         try:
             with open(cls.saveFile, "r") as file:
                 data = json.load(file)
@@ -152,10 +156,12 @@ class Grid():
             for cell in saveData["cells"]:
                 grid.setCell((cell["x"], cell["y"]), logicGates[cell["logicGate"]], direction(cell["rotation"]))
 
+            return grid
+
         except Exception as ex:
             print("Error occured while loading save from file:", ex)
-        finally:
-            return None
+
+        return None
 
  
     @classmethod

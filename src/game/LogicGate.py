@@ -87,7 +87,7 @@ logicGates_list = [
 
     #Connecters
     LogicGate("Line", gateType.connector, InOut([direction.left], 1, [direction.right], 1, bidirectional=True), lambda x: x), #Linear Connector
-    LogicGate("Bend", gateType.connector, InOut([direction.left], 1, [direction.right], 1, bidirectional=True), lambda x: x), #Bend Connector
+    LogicGate("Bend", gateType.connector, InOut([direction.down], 1, [direction.right], 1, bidirectional=True), lambda x: x), #Bend Connector
 
     LogicGate("Splitter", gateType.connector, InOut([direction.left], 1, [direction.up, direction.down], 1,), lambda x: x), #Splits an output into 2 direction
     LogicGate("Merger", gateType.connector, InOut([direction.up, direction.down], 1, [direction.right], 2), lambda x: x), #Combines inputs from 2 directions into the same direction
