@@ -166,4 +166,5 @@ class CreditsPage(tk.Frame):
 
 if __name__ == "__main__":
     app = MindGatesApp()
+    app.title("MindGates")
     app.mainloop()
