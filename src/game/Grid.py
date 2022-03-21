@@ -1,19 +1,18 @@
 
 import json
-from logging import exception
 import math
 import os
 
-from LogicGate import LogicGate, direction, logicGates
+from .logicGate import LogicGate, direction, logicGates
 
-dirname = os.path.dirname(__file__)
-SAVE_LOCATION = os.path.join(dirname, '../../data')
+from settings import DATA_PATH
 
 class Cell():
 
     def __init__(self) -> None:
         self.empty = True
         self.value = False
+        self.rotation = direction(0)
 
     def setGate(self, logicGate: LogicGate, rotation: direction):
         self.value = False
@@ -25,8 +24,8 @@ class Cell():
             self.empty = False
 
     #For toggling the cell value of switch nodes (nodes with not inputs)
-    def toggleSwitch(self, value : bool) -> None:
-        self.value = value
+    def toggleSwitch(self) -> None:
+        self.value = not self.value
 
 
 class Grid():
@@ -48,6 +47,10 @@ class Grid():
     def getCell(self, coordinate: tuple[int, int]) -> Cell:
         x, y = coordinate
         return self.grid[x][y]
+
+    def toggleCell(self, coordinate: tuple[int, int]) -> None:
+        x, y = coordinate
+        self.grid[x][y].toggleSwitch()
 
     def evaluateCell(self, coordinate: tuple[int, int], outputIndex : int = 0, outputDirection : direction = direction.right):
 
@@ -104,7 +107,7 @@ class Grid():
             print(line)
 
 
-    saveFile = SAVE_LOCATION + "/gridData.json"
+    saveFile = DATA_PATH + "/gridData.json"
 
     def save(self, saveName):
 
