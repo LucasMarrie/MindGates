@@ -1,5 +1,5 @@
 from enum import Enum
-import math
+from typing import Callable
 import pygame
 from .grid import Grid
 from .logicGate import LogicGate, direction, gateType
@@ -46,7 +46,7 @@ class DisplayGrid():
             return
 
     #drawing functions
-    def redraw(self):
+    def draw(self):
         rect = pygame.Rect(self.x, self.y, self.width, self.height)
         pygame.draw.rect(self.surface, BACKGROUND_COLOR, rect)
         self.drawGridLines()
@@ -72,13 +72,18 @@ class DisplayGrid():
 class GameGrid(DisplayGrid):
 
     def __init__(self, surface : pygame.Surface, x: int, y: int, width: int, height: int, gridName: str, type: gridType) -> None:
+        self.gridName = gridName
         self.grid = Grid.loadSave(gridName)
         super().__init__(surface, x, y, width, height, self.grid.sizeX, self.grid.sizeY)
         self.type = type
+        self.draw()
 
     #event handling methods
     def changeSelection(self, logicGate: LogicGate):
         self.selectedGate = logicGate
+
+    def save(self):
+        self.grid.save(self.gridName)
 
     def onLeftClick(self, x, y):
         if not self.inBound(x,y):
@@ -109,8 +114,8 @@ class GameGrid(DisplayGrid):
             self.updateCell(gridX, gridY)
 
     #drawing functions
-    def redraw(self):
-        super().redraw()
+    def draw(self):
+        super().draw()
         self.drawLogicGates()
 
     def drawLogicGates(self):
@@ -132,21 +137,47 @@ class GameGrid(DisplayGrid):
 
 class SelectorGrid(DisplayGrid):
 
-    def __init__(self, surface: pygame.Surface, x: int, y: int, width: int, height: int, gridSizeX: int, gridSizeY: int, logicGates: list[LogicGate]) -> None:
+    def __init__(self, surface: pygame.Surface, x: int, y: int, width: int, height: int, gridSizeX: int, gridSizeY: int, logicGates: dict[LogicGate], changeSelectionMethod: Callable[[LogicGate], None]) -> None:
         super().__init__(surface, x, y, width, height, gridSizeX, gridSizeY)
+        self.changeSelectionMethod = changeSelectionMethod
+        self.grid = [[None] * gridSizeY for _ in range(gridSizeX)]
+        self.logicGates = logicGates
+        self.draw()
+        self.updateSelection(0,0)
 
-        count = 0
-        self.grid = [[None] * gridSizeY for _ in gridSizeX]
-        for gate in logicGates:
-            gridX = count // gridSizeX
-            gridY = count % gridSizeY
-            self.grid[gridX][gridY] = gate
-            self.drawImage(gridX, gridY, gate.images[0])
-            count += 1
+    def onLeftClick(self, x, y):
+        if not self.inBound(x, y):
+            return
+        gridX, gridY = self.toGrid(x, y)
+        self.updateSelection(gridX, gridY)
 
-    def redraw(self):
-        super().redraw()
+    def draw(self):
+        super().draw()
         self.drawLogicGates()
 
+    def updateSelection(self, gridX, gridY):
+        if not self.grid[gridX][gridY]:
+            return
+        self.changeSelectionMethod(self.grid[gridX][gridY])
+        self.drawGridLines()
+        self.drawSelectionOutline(gridX, gridY)
+
+    def drawSelectionOutline(self, gridX, gridY):
+        points = [
+            self.toCoord(gridX, gridY),
+            self.toCoord(gridX + 1, gridY),
+            self.toCoord(gridX + 1, gridY + 1),
+            self.toCoord(gridX, gridY + 1),
+        ]
+        pygame.draw.lines(self.surface, SELECTION_COLOR, True, points)
+
+
     def drawLogicGates(self):
-        pass
+        count = 0
+        for gate in self.logicGates.values():
+            gridX = count % self.gridSizeX
+            gridY = count // self.gridSizeX
+            self.grid[gridX][gridY] = gate
+            x, y = self.toCoord(gridX, gridY)
+            self.drawImage(x, y, gate.images[0], direction(0))
+            count += 1

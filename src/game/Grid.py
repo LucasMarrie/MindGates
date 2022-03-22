@@ -5,7 +5,7 @@ import os
 
 from .logicGate import LogicGate, direction, logicGates
 
-from settings import DATA_PATH
+from settings import DATA_PATH, GRID_SIZE
 
 class Cell():
 
@@ -152,7 +152,7 @@ class Grid():
                 data = json.load(file)
             
             if saveName not in data:
-                return None
+                return Grid(GRID_SIZE, GRID_SIZE)
 
             saveData = data[saveName]
             grid = Grid(saveData["sizeX"], saveData["sizeY"])
@@ -164,7 +164,7 @@ class Grid():
         except Exception as ex:
             print("Error occured while loading save from file:", ex)
 
-        return None
+        return Grid(GRID_SIZE, GRID_SIZE)
 
  
     @classmethod

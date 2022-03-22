@@ -1,3 +1,3 @@
-from game.gameWindow import GameWindow
+from game.gameWindow import EditWindow
 
-GameWindow()
+EditWindow("Amogus Grid")
