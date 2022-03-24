@@ -3,15 +3,17 @@ import json
 import math
 import os
 
-from .logicGate import LogicGate, direction, logicGates
+import random
+from .logicGate import LogicGate, direction, gateType, logicGates
 
-from settings import DATA_PATH, GRID_SIZE
+from settings import GRIDDATA_FILE, GRID_SIZE
 
 class Cell():
 
     def __init__(self) -> None:
         self.empty = True
         self.value = False
+        self.logicGate = None
         self.rotation = direction(0)
 
     def setGate(self, logicGate: LogicGate, rotation: direction):
@@ -95,19 +97,13 @@ class Grid():
             return False
         return True
 
-    def printOut(self):
-        for y in range(self.sizeY):
-            line = ""
-            for x in range(self.sizeX):
-                cell = self.getCell((x,y))
-                if cell.empty:
-                    line += " "
-                else:
-                    line += cell.logicGate.name[0]
-            print(line)
-
-
-    saveFile = DATA_PATH + "/gridData.json"
+    
+    def scrambleInputs(self):
+        for coord in self:
+            cell = self.getCell(coord)
+            if (not cell.empty) and (cell.logicGate.type == gateType.start):
+                if random.choice([True, False]):
+                    cell.toggleSwitch()
 
     def save(self, saveName):
 
@@ -130,25 +126,28 @@ class Grid():
                     classData["cells"].append(cellData)
 
         try:
-            if os.path.exists(self.saveFile):
-                with open(self.saveFile, "r") as file:
+            if os.path.exists(GRIDDATA_FILE):
+                with open(GRIDDATA_FILE, "r") as file:
                     data = json.load(file)
             else:
                 data = {}
             
             data[saveName] = classData
 
-            with open(self.saveFile, "w") as file:
+            with open(GRIDDATA_FILE, "w") as file:
                 json.dump(data, file)
         except Exception as ex:
             print("Error occured while saving to file:", ex)
         
+    def updateSave(self, oldName, newName):
+        self.deleteSave(oldName)
+        self.save(newName)
 
 
     @classmethod
     def loadSave(cls, saveName) -> 'Grid':
         try:
-            with open(cls.saveFile, "r") as file:
+            with open(GRIDDATA_FILE, "r") as file:
                 data = json.load(file)
             
             if saveName not in data:
@@ -166,20 +165,31 @@ class Grid():
 
         return Grid(GRID_SIZE, GRID_SIZE)
 
- 
+    @classmethod
+    def getSaves(cls) -> list[str]:
+        try:
+            with open(GRIDDATA_FILE, "r") as file:
+                data = json.load(file)
+            
+            return list(data.keys())
+
+        except Exception as ex:
+            print("Error occured while loading save from file:", ex)
+
+        return []
+        
     @classmethod
     def deleteSave(cls, saveName):
         try:
-            with open(cls.saveFile, "r") as file:
+            with open(GRIDDATA_FILE, "r") as file:
                 data = json.load(file)
             if saveName in data:
                 data.pop(saveName)
-                with open(cls.saveFile, "w") as file:
+                with open(GRIDDATA_FILE, "w") as file:
                     json.dump(data, file)
 
         except Exception as ex:
             print("Error occured while deleting a save from file:", ex)
-
 
 if __name__ == "__main__":
     grid = Grid(10, 10)

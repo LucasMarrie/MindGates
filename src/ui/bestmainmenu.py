@@ -1,5 +1,6 @@
 import tkinter as tk
 from PIL import Image, ImageTk
+from game.gameWindow import EvaluateOutput
 
 
 def createTitle(filename, root=None , x=None, y=None):
@@ -80,7 +81,7 @@ class ChooseGameModePage(tk.Frame):
         createTitle("evaluation_title.png", root = self, x = 95.5, y = 150.5)
         createTitle("generate_title.png", root = self, x = 415.5, y = 150.5)
 
-        b1 = createButton("evaluate_output.png", root = self, command=None, x = 28.5 , y = 180.5)
+        b1 = createButton("evaluate_output.png", root = self, command=lambda: EvaluateOutput(), x = 28.5 , y = 180.5)
         b1.bind("<Enter>", self.hover1)
         b1.bind("<Leave>", self.notHover1)
 
@@ -164,6 +165,9 @@ class CreditsPage(tk.Frame):
         createGoBackButton(self, self.master)
 
 
-if __name__ == "__main__":
+def run():
     app = MindGatesApp()
     app.mainloop()
+
+if __name__ == "__main__":
+    run()

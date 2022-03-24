@@ -64,7 +64,7 @@ class LogicGate():
     #to be assumed that the default logic gate rotation is right
     def __init__(self, name: str, type : gateType, inOut : InOut, operation : Callable[..., bool], images: list[str] = []) -> None:
         self.name = name
-        self.type = gateType
+        self.type = type
         self.inOut = inOut
         self.operation = operation
         self.images = images 
@@ -94,7 +94,7 @@ logicGates_list = [
     LogicGate("Merger", gateType.connector, InOut([direction.up, direction.down], 1, [direction.right], 2), lambda x: x, ["merger.png"]), #Combines inputs from 2 directions into the same direction
 
     #Start and End
-    LogicGate("Switch", gateType.start, InOut([], 0, [direction.right, direction.up, direction.left, direction.down], 1), lambda: True, ["switch_off.png", "switch_off.png"]), #Start Node that's on
+    LogicGate("Switch", gateType.start, InOut([], 0, [direction.right, direction.up, direction.left, direction.down], 1), lambda: True, ["switch_off.png", "switch_on.png"]), #Start Node that's on
 
     LogicGate("End", gateType.end, InOut([direction.left], 1, [], 0), lambda x: x, ["output_off.png", "output_on.png"]), #End Node
 ]

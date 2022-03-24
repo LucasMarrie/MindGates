@@ -1,4 +1,4 @@
-from posixpath import dirname
+from game.gameWindow import EvaluateOutput
 import tkinter as tk
 from PIL import Image, ImageTk
 import os
@@ -31,6 +31,9 @@ class MindGatesApp(tk.Tk):
         tk.Tk.__init__(self)
         self.frame = None
         self.goToPage(MainPage)
+        self.title("MindGates")
+        self.eval('tk::PlaceWindow . center')
+
 
     def goToPage(self, namePage):
         nextFrame = namePage(self)
@@ -38,6 +41,7 @@ class MindGatesApp(tk.Tk):
             self.frame.destroy()
         self.frame = nextFrame
         self.frame.pack()
+        
 
 class MainPage(tk.Frame):
     def __init__(self, master):
@@ -84,7 +88,7 @@ class ChooseGameModePage(tk.Frame):
         createTitle(os.path.join(basedir, "evaluation_title.png"), root = self, x = 95.5, y = 150.5)
         createTitle(os.path.join(basedir, "generate_title.png"), root = self, x = 415.5, y = 150.5)
 
-        b1 = createButton(os.path.join(basedir, "evaluate_output.png"), root = self, command=None, x = 28.5 , y = 180.5)
+        b1 = createButton(os.path.join(basedir, "evaluate_output.png"), root = self, command=lambda: openEvaluateOutput(self.master), x = 28.5 , y = 180.5)
         b1.bind("<Enter>", self.hover1)
         b1.bind("<Leave>", self.notHover1)
 
@@ -101,6 +105,9 @@ class ChooseGameModePage(tk.Frame):
         b4.bind("<Leave>", self.notHover4)
 
         createGoBackButton(self, self.master)
+
+
+
 
 class CreateCustomPage(tk.Frame):
     def __init__(self, master):
@@ -169,7 +176,14 @@ class CreditsPage(tk.Frame):
         createGoBackButton(self, self.master)
 
 
-if __name__ == "__main__":
+def openEvaluateOutput(app):
+        app.destroy()
+        EvaluateOutput()
+        run()
+
+def run():
     app = MindGatesApp()
-    app.title("MindGates")
     app.mainloop()
+
+if __name__ == "__main__":
+    run()

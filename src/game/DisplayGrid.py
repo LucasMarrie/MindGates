@@ -4,11 +4,13 @@ import pygame
 from .grid import Grid
 from .logicGate import LogicGate, direction, gateType
 from .colors import *
+from .popup import Popup
 
 class gridType(Enum):
     edit = 0
     interactive = 1
-    locked = 2
+    evaluateOutput = 2
+    locked = 3
 
 class DisplayGrid():
 
@@ -71,9 +73,9 @@ class DisplayGrid():
 
 class GameGrid(DisplayGrid):
 
-    def __init__(self, surface : pygame.Surface, x: int, y: int, width: int, height: int, gridName: str, type: gridType) -> None:
+    def __init__(self, surface : pygame.Surface, x: int, y: int, width: int, height: int, grid: Grid, gridName: str, type: gridType) -> None:
+        self.grid = grid
         self.gridName = gridName
-        self.grid = Grid.loadSave(gridName)
         super().__init__(surface, x, y, width, height, self.grid.sizeX, self.grid.sizeY)
         self.type = type
         self.draw()
@@ -83,19 +85,40 @@ class GameGrid(DisplayGrid):
         self.selectedGate = logicGate
 
     def save(self):
-        self.grid.save(self.gridName)
+        counter = 0
+        for coord in self.grid:
+            cell = self.grid.getCell(coord)
+            if (not cell.empty) and cell.logicGate.type == gateType.end:
+                counter += 1
+        if counter < 1:
+            Popup("Not enough outputs", "YOU MUST HAVE 1 OUTPUT")
+            pass
+        elif counter > 1:
+            Popup("Too many output", "YOU CAN ONLY HAVE 1 OUTPUT")
+
+        else:
+            while True:
+                newGridName = self.gridName
+                if len(newGridName) < 1 or len(newGridName) > 8:
+                    pass
+            self.grid.updateSave(self.gridName, newGridName)
+            Popup("Save Successful", f"Level \"{newGridName}\" saved")
 
     def onLeftClick(self, x, y):
         if not self.inBound(x,y):
             return
+        gridX, gridY = self.toGrid(x, y)
         if self.type == gridType.edit:
-            gridX, gridY = self.toGrid(x, y)
             self.grid.setCell((gridX, gridY), self.selectedGate)
             self.updateCell(gridX, gridY)
         elif self.type == gridType.interactive:
-            gridX, gridY = self.toGrid(x, y)
             self.grid.toggleCell((gridX, gridY))
             self.updateCell(gridX, gridY)
+        elif self.type == gridType.evaluateOutput:
+            cell = self.grid.getCell((gridX, gridY))
+            if not cell.empty and cell.logicGate.type.end:
+                self.grid.toggleCell((gridX, gridY))
+                self.updateCell(gridX, gridY)
 
     def onRightClick(self, x, y):
         if not self.inBound(x,y):
@@ -129,11 +152,18 @@ class GameGrid(DisplayGrid):
         cell = self.grid.getCell((gridX, gridY))
         pygame.draw.rect(self.surface, BACKGROUND_COLOR, rect)
         if not cell.empty:
-            if cell.logicGate.type == gateType.start and cell.value:
+            if cell.logicGate.type in {gateType.start, gateType.end} and cell.value:
                 self.drawImage(x, y, cell.logicGate.images[1], cell.rotation)
             else:
                 self.drawImage(x, y, cell.logicGate.images[0], cell.rotation)
 
+    def revealOutput(self):
+        for gridX, gridY in self.grid:
+            cell = self.grid.getCell((gridX,gridY))
+            if not cell.empty and cell.logicGate.type == gateType.end:
+                cell.value = self.grid.evaluateCell((gridX, gridY))
+                self.updateCell(gridX, gridY)
+                
 
 class SelectorGrid(DisplayGrid):
 

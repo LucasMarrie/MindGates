@@ -1,3 +1,6 @@
-from game.gameWindow import EditWindow
+from game.gameWindow import EditWindow, EvaluateOutput
+from ui.mindgates_ui import run
 
-EditWindow("Amogus Grid")
+#run()
+EditWindow("Amongus Grid")
+EvaluateOutput()
