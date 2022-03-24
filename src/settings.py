@@ -18,6 +18,7 @@ SCOREDATA_FILE = os.path.join(DATA_PATH, 'scores.json')
 #Configs
 GRID_SIZE = 10
 MAX_CUSTOM_LEVELS = 15
+MAX_SCORES = 7
 
 #Game settings
 EVALUATE_OUTPUT_ROUNDS = 10

@@ -4,7 +4,7 @@ import pygame
 from .grid import Grid
 from .logicGate import LogicGate, direction, gateType
 from .colors import *
-from .popup import Popup
+from .popup import Popup, DialogBox
 
 class gridType(Enum):
     edit = 0
@@ -98,11 +98,22 @@ class GameGrid(DisplayGrid):
 
         else:
             while True:
-                newGridName = self.gridName
-                if len(newGridName) < 1 or len(newGridName) > 8:
-                    pass
-            self.grid.updateSave(self.gridName, newGridName)
-            Popup("Save Successful", f"Level \"{newGridName}\" saved")
+                DialogBox("Save", "SAVE NAME", self.gridName, self.setNewGridName)
+                if len(self.newGridName) < 1 or len(self.newGridName) > 8:
+                    Popup("Input Error", "The save name must be between 1 and 8 characters")
+                elif self.newGridName != self.gridName and self.newGridName in Grid.getSaves():
+                    Popup("Input Error", "A save with the same name already exists")
+                else:
+                    break
+            self.grid.updateSave(self.gridName, self.newGridName)
+            self.gridName = self.newGridName
+            Popup("Save Successful", f"Level \"{self.newGridName}\" saved")
+
+    def setNewGridName(self, newGridName):
+        self.newGridName = newGridName
+
+    def delete(self):
+        Grid.deleteSave(self.gridName)
 
     def onLeftClick(self, x, y):
         if not self.inBound(x,y):

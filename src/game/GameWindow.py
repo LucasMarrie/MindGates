@@ -82,11 +82,16 @@ class EditWindow(GameWindow):
         self.surface.fill(BACKGROUND_COLOR)
         self.components["gameGrid"] = GameGrid(self.surface, 200, 25, 500, 500, self.grid, self.gridName, gridType.edit)
         self.components["selectorGrid"] = SelectorGrid(self.surface, 50, 25, 143, 500, 2, 7, logicGates, self.components["gameGrid"].changeSelection)
-        self.components["saveButton"] = Button(self.surface, 50, 538, 300, 75, "SAVE", 40, self.components["gameGrid"].save)
-        self.components["exitButton"] = Button(self.surface, 400, 538, 300, 75, "EXIT", 40, self.stopRunning)
+        self.components["saveButton"] = Button(self.surface, 50, 538, 200, 75, "SAVE", 40, self.components["gameGrid"].save)
+        self.components["deleteButton"] = Button(self.surface, 275, 538, 200, 75, "DELETE", 40, self.deleteSave)
+        self.components["exitButton"] = Button(self.surface, 500, 538, 200, 75, "EXIT", 40, self.stopRunning)
 
     def onEnterKey(self):
         self.components["gameGrid"].save()
+
+    def deleteSave(self):
+        self.components["gameGrid"].delete()
+        self.stopRunning()
 
 class EvaluateOutput(GameWindow):
     
